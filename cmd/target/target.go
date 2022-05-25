@@ -89,6 +89,7 @@ func runTargets(ctx context.Context, targets []*tcpb.TunnelTarget, server *tcpb.
 	defer clientConn.Close()
 
 	registerHandler := func(t tunnel.Target) error {
+		log.Printf("registerHandler: %s", t.ID)
 		for _, target := range targets {
 			if t.ID == target.GetTarget() {
 				return nil
@@ -109,7 +110,7 @@ func runTargets(ctx context.Context, targets []*tcpb.TunnelTarget, server *tcpb.
 		if len(dialAddr) == 0 {
 			return fmt.Errorf("not maching dial port found for target: %s|%s", t.ID, t.Type)
 		}
-
+		log.Printf("connecting to %s", dialAddr)
 		conn, err := net.Dial("tcp", dialAddr)
 		if err != nil {
 			return fmt.Errorf("failed to dial %s: %v", dialAddr, err)
@@ -118,6 +119,7 @@ func runTargets(ctx context.Context, targets []*tcpb.TunnelTarget, server *tcpb.
 		if err = bidi.Copy(i, conn); err != nil {
 			log.Printf("error from bidi copy: %v", err)
 		}
+		log.Printf("connection to %s closed", dialAddr)
 		return nil
 	}
 
@@ -126,7 +128,7 @@ func runTargets(ctx context.Context, targets []*tcpb.TunnelTarget, server *tcpb.
 		t := tunnel.Target{ID: target.GetTarget(), Type: target.GetType()}
 		ts[t] = struct{}{}
 	}
-
+	log.Printf("creating tunnel client")
 	client, err := tunnel.NewClient(tpb.NewTunnelClient(clientConn), tunnel.ClientConfig{
 		RegisterHandler: registerHandler,
 		Handler:         handler,
