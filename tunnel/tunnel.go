@@ -515,7 +515,6 @@ func (s *Server) addSubscription(addr net.Addr, typ string) error {
 }
 
 func (s *Server) subscribe(addr net.Addr, sub *tpb.Subscription) error {
-
 	targets := s.clientTargets(nil)
 	// Combine with local targets.
 	for t := range s.lTargets {
@@ -525,6 +524,7 @@ func (s *Server) subscribe(addr net.Addr, sub *tpb.Subscription) error {
 	for t := range targets {
 		allTypes[t.Type] = struct{}{}
 	}
+	allTypes[sub.TargetType] = struct{}{}
 
 	for typ := range allTypes {
 		if sub.TargetType != "" && sub.TargetType != typ {
